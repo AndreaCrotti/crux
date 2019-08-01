@@ -114,8 +114,8 @@
     (query-map? input-edn)        (with-query-map-data input-edn)
     :else                         false))
 
-(defn- calc-numeric-keys [m]
-  (map first (filter (comp number? second) m)))
+(defn- calc-numeric-keys [result-map]
+  (map first (filter (comp number? second) result-map)))
 
 (defn analyse-results
   [{:query/keys
@@ -123,7 +123,6 @@
      attr-vec]
     :as query-info}
    results]
-  (def args [query-info results])
   (if (and (= (:crux.ui/query-type query-info) :crux.ui.query-type/query)
            (not-empty results))
     (let [r-count (count results)
