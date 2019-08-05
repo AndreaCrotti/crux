@@ -37,12 +37,10 @@
 (defn- on-histories-docs-success [eid->history]
   (rf/dispatch [:evt.io/histories-with-docs-fetch-success eid->history]))
 
-(defn- on-error [query-type err]
-  (def terr err)
-  (println :on-error err)
+(defn- on-error [error-type err]
   (rf/dispatch [:evt.io/query-error
-                {:evt/query-type query-type
-                 :evt/err err}]))
+                {:evt/error-type error-type
+                 :evt/err        (.-data err)}]))
 
 (defn- on-error--query [err]
   (on-error :error/query err))

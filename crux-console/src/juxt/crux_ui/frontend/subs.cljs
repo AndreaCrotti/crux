@@ -2,7 +2,8 @@
   (:require [re-frame.core :as rf]
             [juxt.crux-ui.frontend.example-queries :as ex]
             [juxt.crux-ui.frontend.logic.plotting-data-calc :as pd]
-            [juxt.crux-ui.frontend.logic.query-analysis :as qa]))
+            [juxt.crux-ui.frontend.logic.query-analysis :as qa]
+            [cljs.reader :as reader]))
 
 
 
@@ -33,7 +34,7 @@
 (rf/reg-sub :subs.query/input  (fnil :db.query/input  {}))
 ; (rf/reg-sub :subs.query/examples-imported (fnil :db.ui.examples/imported false))
 (rf/reg-sub :subs.query/result (fnil :db.query/result {}))
-(rf/reg-sub :subs.query/error  (fnil :db.query/error  {}))
+(rf/reg-sub :subs.query/error  #(:db.query/error % false))
 (rf/reg-sub :subs.query/analysis-committed (fnil :db.query/analysis-committed {}))
 (rf/reg-sub :subs.query/result-analysis (fnil :db.query/result-analysis {}))
 
@@ -140,12 +141,26 @@
       :else   :db.ui.output-tab/attr-stats)))
 
 (rf/reg-sub
+  :subs.query/output-textual
+  :<- [:subs.query/result]
+  :<- [:subs.query/error]
+  (fn [[res err-event]]
+    (if err-event
+      (-> err-event :evt/err :body reader/read-string)
+      res)))
+
+(:evt/err (:db.query/error @re-frame.db/app-db))
+
+
+(rf/reg-sub
   :subs.ui/output-main-tab
   :<- [:subs.db.ui/output-main-tab]
   :<- [:subs.query/analysis-committed]
   :<- [:subs.query/result]
-  (fn [[out-tab q-info q-res :as args]]
+  :<- [:subs.query/error]
+  (fn [[out-tab q-info q-res q-err :as args]]
     (cond
+      q-err               :db.ui.output-tab/edn
       (not q-res)         :db.ui.output-tab/empty
       (= 0 (count q-res)) :db.ui.output-tab/empty
       out-tab out-tab

@@ -114,9 +114,9 @@
 
 (rf/reg-event-db
   :evt.io/query-error
-  (fn [db [_ {:evt/keys [query-type err]}]]
+  (fn [db [_ {:evt/keys [error-type err] :as evt}]]
     (println :evt.io/query-error err)
-    (assoc db :db.query/error "Gist import didn't go well")))
+    (assoc db :db.query/error evt)))
 
 (rf/reg-event-fx
   :evt.io/gist-success

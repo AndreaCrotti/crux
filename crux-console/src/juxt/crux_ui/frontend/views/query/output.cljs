@@ -13,10 +13,10 @@
             [juxt.crux-ui.frontend.views.codemirror :as cm]))
 
 
-(def ^:private -sub-query-res (rf/subscribe [:subs.query/result]))
-(def ^:private -sub-output-tab (rf/subscribe [:subs.ui/output-main-tab]))
+(def ^:private -sub-query-res-raw   (rf/subscribe [:subs.query/output-textual]))
+(def ^:private -sub-output-tab      (rf/subscribe [:subs.ui/output-main-tab]))
 (def ^:private -sub-output-side-tab (rf/subscribe [:subs.ui/output-side-tab]))
-(def ^:private -sub-results-table (rf/subscribe [:subs.query/results-table]))
+(def ^:private -sub-results-table   (rf/subscribe [:subs.query/results-table]))
 
 
 (def empty-placeholder
@@ -137,7 +137,7 @@
          :db.ui.output-tab/tree           [q-results-tree/root]
          :db.ui.output-tab/tx-history     [output-txes/root]
          :db.ui.output-tab/attr-history   [output-attr-history/root]
-         :db.ui.output-tab/edn            [output-edn/root @-sub-query-res]
+         :db.ui.output-tab/edn            [output-edn/root @-sub-query-res-raw]
          :db.ui.output-tab/empty          empty-placeholder
          [q-results-table/root @-sub-results-table])
        [:div.q-output__main__links
