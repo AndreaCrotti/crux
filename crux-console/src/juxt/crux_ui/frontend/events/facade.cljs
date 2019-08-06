@@ -114,8 +114,7 @@
 
 (rf/reg-event-db
   :evt.io/query-error
-  (fn [db [_ {:evt/keys [error-type err] :as evt}]]
-    (println :evt.io/query-error err)
+  (fn [db [_ {:evt/keys [query-type error] :as evt}]]
     (assoc db :db.query/error evt)))
 
 (rf/reg-event-fx

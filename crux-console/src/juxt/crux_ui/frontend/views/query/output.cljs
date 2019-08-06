@@ -7,13 +7,15 @@
             [juxt.crux-ui.frontend.views.output.tx-history :as output-txes]
             [juxt.crux-ui.frontend.views.output.attr-history :as output-attr-history]
             [juxt.crux-ui.frontend.views.output.edn :as output-edn]
+            [juxt.crux-ui.frontend.views.output.error :as q-err]
             [juxt.crux-ui.frontend.views.output.table :as q-results-table]
             [juxt.crux-ui.frontend.views.style :as s]
             [juxt.crux-ui.frontend.views.attr-stats :as attr-stats]
             [juxt.crux-ui.frontend.views.codemirror :as cm]))
 
 
-(def ^:private -sub-query-res-raw   (rf/subscribe [:subs.query/output-textual]))
+(def ^:private -sub-err             (rf/subscribe [:subs.query/error-improved]))
+(def ^:private -sub-query-res-raw   (rf/subscribe [:subs.query/result]))
 (def ^:private -sub-output-tab      (rf/subscribe [:subs.ui/output-main-tab]))
 (def ^:private -sub-output-side-tab (rf/subscribe [:subs.ui/output-side-tab]))
 (def ^:private -sub-results-table   (rf/subscribe [:subs.query/results-table]))
@@ -133,6 +135,7 @@
     (if-let [out-tab @-sub-output-tab]
       [:<>
        (case out-tab
+         :db.ui.output-tab/error          [q-err/root @-sub-err]
          :db.ui.output-tab/table          [q-results-table/root @-sub-results-table]
          :db.ui.output-tab/tree           [q-results-tree/root]
          :db.ui.output-tab/tx-history     [output-txes/root]

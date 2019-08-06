@@ -37,16 +37,16 @@
 (defn- on-histories-docs-success [eid->history]
   (rf/dispatch [:evt.io/histories-with-docs-fetch-success eid->history]))
 
-(defn- on-error [error-type err]
+(defn- on-error [query-type err]
   (rf/dispatch [:evt.io/query-error
-                {:evt/error-type error-type
-                 :evt/err        (.-data err)}]))
+                {:evt/query-type query-type
+                 :evt/error      (.-data err)}]))
 
 (defn- on-error--query [err]
-  (on-error :error/query err))
+  (on-error :crux.ui.query-type/query err))
 
 (defn- on-error--tx [err]
-  (on-error :error/tx err))
+  (on-error :crux.ui.query-type/tx err))
 
 
 (defn exec-q [query-text vt tt]
@@ -67,9 +67,9 @@
     (if-not query-analysis
       (println "err") ; TODO feedback to UI, or rather, UI shouldn't let it get this far
       (case qtype
-        :crux.ui.query-type/query     (exec-q raw-input query-vt query-tt)
-        :crux.ui.query-type/tx-multi  (exec-tx raw-input)
-        :crux.ui.query-type/tx-single (exec-tx raw-input)))))
+        :crux.ui.query-type/query (exec-q raw-input query-vt query-tt)
+        :crux.ui.query-type/tx (exec-tx raw-input)))))
+
 
 (defn fetch-stats []
   (-> node-client

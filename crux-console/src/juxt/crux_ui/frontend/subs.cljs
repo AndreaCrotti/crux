@@ -141,16 +141,22 @@
       :else   :db.ui.output-tab/attr-stats)))
 
 (rf/reg-sub
-  :subs.query/output-textual
-  :<- [:subs.query/result]
+  :subs.query/error-improved
   :<- [:subs.query/error]
-  (fn [[res err-event]]
-    (if err-event
-      (-> err-event :evt/err :body reader/read-string)
-      res)))
+  (fn [err-event]
+    (when err-event
+      (let [fetch-err (:evt/error err-event)
+            status    (:status fetch-err)
+            body-raw  (:body fetch-err)
+            body-edn  (reader/read-string body-raw)]
 
-(:evt/err (:db.query/error @re-frame.db/app-db))
-
+        {:query-type (:evt/query-type err-event)
+         :err/http-status  status
+         :err/type
+         (if (<= 500 status)
+           :err.type/server
+           :err.type/client)
+         :err/exception body-edn}))))
 
 (rf/reg-sub
   :subs.ui/output-main-tab
@@ -160,11 +166,11 @@
   :<- [:subs.query/error]
   (fn [[out-tab q-info q-res q-err :as args]]
     (cond
-      q-err               :db.ui.output-tab/edn
-      (not q-res)         :db.ui.output-tab/empty
+      q-err :db.ui.output-tab/error
+      (not q-res) :db.ui.output-tab/empty
       (= 0 (count q-res)) :db.ui.output-tab/empty
       out-tab out-tab
-      (= :crux.ui.query-type/tx-multi (:crux.ui/query-type q-info)) :db.ui.output-tab/edn
+      (= :crux.ui.query-type/tx (:crux.ui/query-type q-info)) :db.ui.output-tab/edn
       (= 1 (count q-res)) :db.ui.output-tab/tree
-      :else    :db.ui.output-tab/table)))
+      :else :db.ui.output-tab/table)))
 
