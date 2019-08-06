@@ -4,6 +4,7 @@
      [org.clojure/clojurescript   "1.10.520"]
      [cljs.bean                   "1.3.0"]
      [reagent                     "0.8.1"]
+     [garden                      "1.3.9"]
      [re-frame                    "0.10.8"]
      [day8.re-frame/re-frame-10x  "0.3.3"]
      [re-com                      "2.2.0"]
