@@ -101,6 +101,7 @@
           res-analysis (qa/analyse-results q-info res)
           nums?  (:ra/has-numeric-attrs? res-analysis)
           db     (assoc db :db.query/result res
+                           :db.query/error nil
                            :db.query/result-analysis res-analysis)]
 
       (cond-> {:db db}

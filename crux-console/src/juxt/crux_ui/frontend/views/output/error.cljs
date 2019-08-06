@@ -8,7 +8,9 @@
   [:style
    (garden/css
      [:.err-info
-      {:padding "8px 16px"}
+      {:padding "8px 16px"
+       :height :100%
+       :overflow :scroll}
       [:&__header
        {:line-height 1
         :padding "24px 8px 24px"}]

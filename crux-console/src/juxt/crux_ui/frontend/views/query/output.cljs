@@ -117,32 +117,33 @@
           {:display :none}]]))])
 
 (defn root []
-  [:div.q-output
-   q-output-styles
+  (let [main-tab @-sub-output-tab]
+    [:div.q-output
+     q-output-styles
 
-   [:div.q-output__side
-    (let [out-tab @-sub-output-side-tab]
-      [:<>
-        [:div.q-output__side__content
-            (case out-tab
-              :db.ui.output-tab/attr-stats [attr-stats/root]
-              :db.ui.output-tab/empty empty-placeholder
-              [q-results-tree/root])]
-        [:div.q-output__side__links
-         [side-output-tabs out-tab]]])]
+     [:div.q-output__side
+      (let [out-tab @-sub-output-side-tab]
+        [:<>
+          [:div.q-output__side__content
+              (case out-tab
+                :db.ui.output-tab/attr-stats [attr-stats/root]
+                :db.ui.output-tab/empty empty-placeholder
+                [q-results-tree/root])]
+          [:div.q-output__side__links
+           [side-output-tabs out-tab]]])]
 
-   [:div.q-output__main
-    (if-let [out-tab @-sub-output-tab]
-      [:<>
-       (case out-tab
-         :db.ui.output-tab/error          [q-err/root @-sub-err]
-         :db.ui.output-tab/table          [q-results-table/root @-sub-results-table]
-         :db.ui.output-tab/tree           [q-results-tree/root]
-         :db.ui.output-tab/tx-history     [output-txes/root]
-         :db.ui.output-tab/attr-history   [output-attr-history/root]
-         :db.ui.output-tab/edn            [output-edn/root @-sub-query-res-raw]
-         :db.ui.output-tab/empty          empty-placeholder
-         [q-results-table/root @-sub-results-table])
-       [:div.q-output__main__links
-        [main-output-tabs out-tab]]]
-      empty-placeholder)]])
+     [:div.q-output__main
+      (if main-tab
+        [:<>
+         (case main-tab
+           :db.ui.output-tab/error          [q-err/root @-sub-err]
+           :db.ui.output-tab/table          [q-results-table/root @-sub-results-table]
+           :db.ui.output-tab/tree           [q-results-tree/root]
+           :db.ui.output-tab/tx-history     [output-txes/root]
+           :db.ui.output-tab/attr-history   [output-attr-history/root]
+           :db.ui.output-tab/edn            [output-edn/root @-sub-query-res-raw]
+           :db.ui.output-tab/empty          empty-placeholder
+           [q-results-table/root @-sub-results-table])
+         [:div.q-output__main__links
+          [main-output-tabs main-tab]]]
+        empty-placeholder)]]))
