@@ -29,7 +29,8 @@
 (rf/reg-fx
   :fx/query-exec
   (fn [{:keys [raw-input query-analysis] :as query}]
-    (q/exec query)))
+    (if query
+      (q/exec query))))
 
 (rf/reg-fx
   :fx/query-stats
@@ -158,28 +159,50 @@
     {:dispatch [:evt.ui/query-submit]}))
 
 
+(defn o-reset-results [db]
+  (assoc db
+    :db.query/result nil
+    :db.query/result-analysis nil
+    :db.query/histories nil
+    :db.query/eid->simple-history nil
+    :db.query/analysis-committed nil
+    :db.query/input-committed nil
+    :db.query/error nil))
+
+(defn o-commit-input [db input]
+  (let [input (:db.query/input db)
+        edn (qa/try-read-string input)
+        analysis (and (not (:error edn)) (qa/analyse-query edn))]
+    (-> db
+        (update :db.query/key inc)
+        (assoc :db.query/input-committed input
+               :db.query/analysis-committed analysis
+               :db.query/edn-committed edn))))
+
 
 ; --- ui ---
+
+(defn db->query-params
+  [{:db.query/keys
+    [analysis-committed query-times
+     input-committed]
+    :as db}]
+  (if analysis-committed
+    {:raw-input      input-committed
+     :query-vt       (:time/vt query-times)
+     :query-tt       (:time/tt query-times)
+     :query-analysis analysis-committed}))
 
 (rf/reg-event-fx
   :evt.ui/query-submit
   (fn [{:keys [db] :as ctx}]
-    (let [input (:db.query/input db)
-          edn (qa/try-read-string input)
-          query-times (:db.query/time db)
-          vt (:crux.ui.time-type/vt query-times)
-          tt (:crux.ui.time-type/tt query-times)
-          analysis (and (not (:error edn)) (qa/analyse-query edn))]
-      {:db            (-> db
-                          (update :db.query/key inc)
-                          (assoc :db.query/input-committed input
-                                 :db.query/analysis-committed analysis
-                                 :db.query/edn-committed edn
-                                 :db.query/result nil))
-       :fx/query-exec {:raw-input      input
-                       :query-vt vt
-                       :query-tt tt
-                       :query-analysis analysis}})))
+    ; todo do analysis first
+    (let [new-db
+          (-> db
+              (o-reset-results)
+              (o-commit-input (:db.query/input db)))]
+      {:db new-db
+       :fx/query-exec (db->query-params new-db)})))
 
 (rf/reg-event-fx
   :evt.ui/github-examples-request
@@ -202,6 +225,11 @@
 
 (rf/reg-event-db
   :evt.ui.query/time-change
+  (fn [db [_ time-type time]]
+    (assoc-in db [:db.query/time time-type] time)))
+
+(rf/reg-event-db
+  :evt.ui.query/time-commit
   (fn [db [_ time-type time]]
     (assoc-in db [:db.query/time time-type] time)))
 

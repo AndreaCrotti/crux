@@ -1,96 +1,26 @@
 (ns juxt.crux-ui.frontend.views.query.time-controls
   (:require [garden.core :as garden]
-            [juxt.crux-ui.frontend.functions :as f]
-            [juxt.crux-ui.frontend.logging :as log]
-            ["react-input-range" :as ir]
-            [re-frame.core :as rf]))
+            [juxt.crux-ui.frontend.logic.time :as time]
+            [juxt.crux-ui.frontend.views.query.datepicker-native :as ndt]
+            [juxt.crux-ui.frontend.views.query.datepicker-slider :as sdt]
+            [re-frame.core :as rf]
+            [reagent.core :as r]
+            [juxt.crux-ui.frontend.functions :as f]))
+
+(def on-time-commit-debounced
+  (f/debounce
+    (fn on-time-commit [^keyword time-type ^js/Date time]
+      (rf/dispatch [:evt.ui.query/time-commit time-type time]))
+    1000))
 
 
-(defn- on-time-change--native [time-type evt]
-  (try
-    (let [v (f/jsget evt "target" "value")
-          d (js/Date. v)]
-      (log/log "value parsed" d)
-      (if (js/isNaN d)
-        (rf/dispatch [:evt.ui.query/time-reset time-type])
-        (rf/dispatch [:evt.ui.query/time-change time-type d])))
-    (catch js/Error err
-      (rf/dispatch [:evt.ui.query/time-reset time-type])
-      (log/error err))))
+(defn on-vt-change [d]
+  (on-time-commit-debounced :time/vt d)
+  (rf/dispatch [:evt.ui.query/time-change :time/vt d]))
 
-(defn- on-vt-change [evt]
-  (on-time-change--native :crux.ui.time-type/vt evt))
-
-(defn- on-tt-change [evt]
-  (on-time-change--native :crux.ui.time-type/tt evt))
-
-
-(defn- on-time-change--slider [time-type evt]
-  (try
-    (let [v (f/jsget evt "target" "value")
-          d (js/Date. v)]
-      (log/log "value parsed" d)
-      (if (js/isNaN d)
-        (rf/dispatch [:evt.ui.query/time-reset time-type])
-        (rf/dispatch [:evt.ui.query/time-change time-type d])))
-    (catch js/Error err
-      (rf/dispatch [:evt.ui.query/time-reset time-type])
-      (log/error err))))
-
-(defn- on-vt-change--slider [evt]
-  (on-time-change--slider :crux.ui.time-type/vt evt))
-
-(defn- on-tt-change--slider [evt]
-  (on-time-change--slider :crux.ui.time-type/tt evt))
-
-
-
-(defn date-time-picker [{:keys [label on-change] :as prms}]
-  [:div.native-date-time-picker
-   [:label.native-date-time-picker__label label]
-   [:input.native-date-time-picker__input
-    {:type "datetime-local" :on-change on-change}]])
-
-(def ^:const day-millis (* 1000 60 60 24))
-
-(defn date-time-picker--slider [{:keys [label on-change] :as prms}]
-   [:div.slider-date-time-picker
-    [:label.slider-date-time-picker__label label]
-    [:div.slider-date-time-picker__input
-     "Year"
-     [:> ir {:value 2019
-             :step 1
-             :minValue 1970
-             :maxValue 2020
-             :onChange on-change}]]
-    [:div.slider-date-time-picker__input
-     "Month"
-     [:> ir {:value 2019
-             :step 1
-             :minvalue 1970
-             :maxvalue 2020
-             :onchange on-change}]]
-    [:div.slider-date-time-picker__input
-     "Day"
-     [:> ir {:value 2019
-             :step 1
-             :minvalue 1970
-             :maxvalue 2020
-             :onchange on-change}]]
-    [:div.slider-date-time-picker__input
-     "Hour"
-     [:> ir {:value 2019
-             :step 1
-             :minvalue 1970
-             :maxvalue 2020
-             :onchange on-change}]]
-    [:div.slider-date-time-picker__input
-     "Minute"
-     [:> ir {:value 2019
-             :step 1
-             :minvalue 1970
-             :maxvalue 2020
-             :onchange on-change}]]])
+(defn on-tt-change [d]
+  (on-time-commit-debounced :time/tt d)
+  (rf/dispatch [:evt.ui.query/time-change :time/tt d]))
 
 
 (def ^:private time-controls-styles
@@ -103,6 +33,7 @@
         :display :block
         :font-size :1.1em
         :letter-spacing :.04em}]
+
       [:&__input
        {:width         "auto"
         :padding       :4px
@@ -122,16 +53,21 @@
 (defn native-pickers []
   [:<>
    [:div.time-controls__item
-    [date-time-picker {:label "Valid time" :on-change on-vt-change}]]
+    [ndt/picker {:label "Valid time" :on-change on-vt-change}]]
    [:div.time-controls__item
-    [date-time-picker {:label "Transaction Time" :on-change on-tt-change}]]])
+    [ndt/picker {:label "Transaction Time" :on-change on-tt-change}]]])
+
+(def t (js/Date.))
 
 (defn range-pickers []
   [:<>
    [:div.time-controls__item
-    [date-time-picker--slider {:label "Valid time" :on-change on-vt-change--slider}]]
+    [sdt/root
+     {:label "Valid time"
+      :value (time/date->comps (js/Date.))
+      :on-change on-vt-change}]]
    #_[:div.time-controls__item
-      [date-time-picker--slider {:label "Transaction Time" :on-change on-tt-change--slider}]]])
+      [sdt/root {:label "Transaction Time" :on-change on-tt-change}]]])
 
 
 (defn root []
