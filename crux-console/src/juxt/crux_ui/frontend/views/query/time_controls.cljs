@@ -24,31 +24,59 @@
 (defn- on-tt-change [evt]
   (on-time-change :crux.ui.time-type/tt evt))
 
-(def ^:private query-controls-styles
+(defn date-time-picker [{:keys [label on-change] :as prms}]
+   [:div.native-date-time-picker
+    [:label.native-date-time-picker__label label]
+    [:input.native-date-time-picker__input
+     {:type "datetime-local" :on-change on-change}]])
+
+(defn date-time-picker--slider [{:keys [label on-change] :as prms}]
+  [:div.date-time-picker--slider])
+
+(def ^:private time-controls-styles
   [:style
    (garden/css
-     [:.query-controls
+
+     [:.native-date-time-picker
+      [:&__label
+       {:width :100%
+        :display :block
+        :font-size :1.1em
+        :letter-spacing :.04em}]
+      [:&__input
+       {:width         "auto"
+        :padding       :4px
+        :border-radius :2px
+        :font-size :inherit
+        :margin-top    :4px
+        :border        "1px solid hsl(0, 0%, 85%)"}]]
+
+     [:.time-controls
       {:display         :flex
        :flex-direction  :column
        :justify-content :space-between
-       :padding         "8px 24px"}
+       :padding         "24px 24px"}
       [:&__item
-       {:margin-bottom :16px}]
-      [:&__item>label
-       {:letter-spacing :.04em}]
-      [:&__item>input
-       {:padding       :4px
-        :border-radius :2px
-        :margin-top    :4px
-        :border        "1px solid hsl(0, 0%, 85%)"}]])])
+       {:margin-bottom :32px}]])])
+
+(def native-pickers
+  [:<>
+   [:div.time-controls__item
+    (date-time-picker {:label "Valid time" :on-change on-vt-change})]
+   [:div.time-controls__item
+    (date-time-picker {:label "Transaction Time" :on-change on-tt-change})]])
+
+(def range-pickers
+  [:<>
+   [:div.time-controls__item
+    (date-time-picker--slider {:label "Valid time" :on-change on-vt-change})]
+   [:div.time-controls__item
+    (date-time-picker--slider {:label "Transaction Time" :on-change on-tt-change})]])
 
 
 (defn root []
-  [:div.query-controls
-   query-controls-styles
-   [:div.query-controls__item
-    [:label "Valid Time (optional)"]
-    [:input {:type "datetime-local" :name "vt" :on-change on-vt-change}]]
-   [:div.query-controls__item
-    [:label "Transaction Time (optional)"]
-    [:input {:type "datetime-local" :name "tt" :on-change on-tt-change}]]])
+  [:div.time-controls
+   time-controls-styles
+   native-pickers
+   #_range-pickers])
+
