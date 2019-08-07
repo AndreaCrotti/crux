@@ -8,8 +8,6 @@
             [juxt.crux-ui.frontend.views.query.time-controls :as time-controls]))
 
 
-(def ^:private -sub-query-input-malformed (rf/subscribe [:subs.query/input-malformed?]))
-(def ^:private -sub-query-analysis (rf/subscribe [:subs.query/analysis]))
 (def ^:private -sub-editor-key (rf/subscribe [:subs.ui/editor-key]))
 
 (defn- on-submit [e]
@@ -48,28 +46,9 @@
          {:grid-area "time-controls"
           :border-right s/q-ui-border}]
 
-        [:&__editor-area
-         {:grid-area "editor"}]
-
         [:&__editor
-         {:height :100%}]
-
-        [:&__editor-err
-         :&__examples
-         {:position :absolute
-          :left     :8px
-          :border-radius :2px
-          :background :white
-          :padding  :8px
-          :bottom   :0px
-          :color    "hsl(0,0%,50%)"
-          :z-index  10}]
-
-        [:&__type
-         {:position :absolute
-          :right    :8px
-          :top      :8px
-          :z-index  10}]
+         {:grid-area "editor"
+          :height :100%}]
 
         [:&__submit
          {:position :absolute
@@ -88,24 +67,17 @@
           [:.q-output
            {:grid-template "'editor editor' 1fr / minmax(280px, 400px) 1fr"}
            [:&__side
-            {:display :none}]])
-        ]])])
+            {:display :none}]])]])])
+
 
 (defn root []
   [:div.q-form
    q-form-styles
    [:div.q-form__time-controls
     [time-controls/root]]
-   [:div.q-form__editor-area
-    [:div.q-form__editor
-     ^{:key @-sub-editor-key}
-     [q-editor/root]]
-    [:div.q-form__type (name (:crux.ui/query-type @-sub-query-analysis ""))]
-    (if-let [e @-sub-query-input-malformed]
-      [:div.q-form__editor-err
-       "Query input appears to be malformed: " (.-message e)]
-      [:div.q-form__examples
-       [query-examples/root]])
-    [:div.q-form__submit
-     [:button.q-form__submit-btn {:on-click on-submit} "Run Query [ctrl + enter]"]]]])
+   [:div.q-form__editor
+    ^{:key @-sub-editor-key}
+    [q-editor/root]]
+   [:div.q-form__submit
+    [:button.q-form__submit-btn {:on-click on-submit} "Run Query [ctrl + enter]"]]])
 

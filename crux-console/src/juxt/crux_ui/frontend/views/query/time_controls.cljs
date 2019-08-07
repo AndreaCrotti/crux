@@ -2,10 +2,11 @@
   (:require [garden.core :as garden]
             [juxt.crux-ui.frontend.functions :as f]
             [juxt.crux-ui.frontend.logging :as log]
+            ["react-input-range" :as ir]
             [re-frame.core :as rf]))
 
 
-(defn- on-time-change [time-type evt]
+(defn- on-time-change--native [time-type evt]
   (try
     (let [v (f/jsget evt "target" "value")
           d (js/Date. v)]
@@ -17,21 +18,80 @@
       (rf/dispatch [:evt.ui.query/time-reset time-type])
       (log/error err))))
 
-
 (defn- on-vt-change [evt]
-  (on-time-change :crux.ui.time-type/vt evt))
+  (on-time-change--native :crux.ui.time-type/vt evt))
 
 (defn- on-tt-change [evt]
-  (on-time-change :crux.ui.time-type/tt evt))
+  (on-time-change--native :crux.ui.time-type/tt evt))
+
+
+(defn- on-time-change--slider [time-type evt]
+  (try
+    (let [v (f/jsget evt "target" "value")
+          d (js/Date. v)]
+      (log/log "value parsed" d)
+      (if (js/isNaN d)
+        (rf/dispatch [:evt.ui.query/time-reset time-type])
+        (rf/dispatch [:evt.ui.query/time-change time-type d])))
+    (catch js/Error err
+      (rf/dispatch [:evt.ui.query/time-reset time-type])
+      (log/error err))))
+
+(defn- on-vt-change--slider [evt]
+  (on-time-change--slider :crux.ui.time-type/vt evt))
+
+(defn- on-tt-change--slider [evt]
+  (on-time-change--slider :crux.ui.time-type/tt evt))
+
+
 
 (defn date-time-picker [{:keys [label on-change] :as prms}]
-   [:div.native-date-time-picker
-    [:label.native-date-time-picker__label label]
-    [:input.native-date-time-picker__input
-     {:type "datetime-local" :on-change on-change}]])
+  [:div.native-date-time-picker
+   [:label.native-date-time-picker__label label]
+   [:input.native-date-time-picker__input
+    {:type "datetime-local" :on-change on-change}]])
+
+(def ^:const day-millis (* 1000 60 60 24))
 
 (defn date-time-picker--slider [{:keys [label on-change] :as prms}]
-  [:div.date-time-picker--slider])
+   [:div.slider-date-time-picker
+    [:label.slider-date-time-picker__label label]
+    [:div.slider-date-time-picker__input
+     "Year"
+     [:> ir {:value 2019
+             :step 1
+             :minValue 1970
+             :maxValue 2020
+             :onChange on-change}]]
+    [:div.slider-date-time-picker__input
+     "Month"
+     [:> ir {:value 2019
+             :step 1
+             :minvalue 1970
+             :maxvalue 2020
+             :onchange on-change}]]
+    [:div.slider-date-time-picker__input
+     "Day"
+     [:> ir {:value 2019
+             :step 1
+             :minvalue 1970
+             :maxvalue 2020
+             :onchange on-change}]]
+    [:div.slider-date-time-picker__input
+     "Hour"
+     [:> ir {:value 2019
+             :step 1
+             :minvalue 1970
+             :maxvalue 2020
+             :onchange on-change}]]
+    [:div.slider-date-time-picker__input
+     "Minute"
+     [:> ir {:value 2019
+             :step 1
+             :minvalue 1970
+             :maxvalue 2020
+             :onchange on-change}]]])
+
 
 (def ^:private time-controls-styles
   [:style
@@ -59,24 +119,24 @@
       [:&__item
        {:margin-bottom :32px}]])])
 
-(def native-pickers
+(defn native-pickers []
   [:<>
    [:div.time-controls__item
-    (date-time-picker {:label "Valid time" :on-change on-vt-change})]
+    [date-time-picker {:label "Valid time" :on-change on-vt-change}]]
    [:div.time-controls__item
-    (date-time-picker {:label "Transaction Time" :on-change on-tt-change})]])
+    [date-time-picker {:label "Transaction Time" :on-change on-tt-change}]]])
 
-(def range-pickers
+(defn range-pickers []
   [:<>
    [:div.time-controls__item
-    (date-time-picker--slider {:label "Valid time" :on-change on-vt-change})]
-   [:div.time-controls__item
-    (date-time-picker--slider {:label "Transaction Time" :on-change on-tt-change})]])
+    [date-time-picker--slider {:label "Valid time" :on-change on-vt-change--slider}]]
+   #_[:div.time-controls__item
+      [date-time-picker--slider {:label "Transaction Time" :on-change on-tt-change--slider}]]])
 
 
 (defn root []
   [:div.time-controls
    time-controls-styles
-   native-pickers
-   #_range-pickers])
+   #_[native-pickers]
+   [range-pickers]])
 
