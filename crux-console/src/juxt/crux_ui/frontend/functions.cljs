@@ -1,6 +1,8 @@
 (ns juxt.crux-ui.frontend.functions
   (:require [cljs.core.async :as async]
-            [cljs.pprint :as pprint]))
+            [cljs.pprint :as pprint])
+  (:import [goog.object]
+           [goog.async Debouncer]))
 
 (def jsget goog.object/getValueByKeys)
 

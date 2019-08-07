@@ -22,6 +22,40 @@
       (update :db.ui/editor-key inc)
       (assoc :db.query/input str
              :db.query/input-committed str)))
+(defn o-reset-results [db]
+  (assoc db
+    :db.query/result nil
+    :db.query/result-analysis nil
+    :db.query/histories nil
+    :db.query/eid->simple-history nil
+    :db.query/analysis-committed nil
+    :db.query/input-committed nil
+    :db.query/error nil))
+
+(defn query-is-valid? [query-string]
+  (not (:error (qa/try-read-string query-string))))
+
+(defn o-commit-input [db input]
+  (let [input    (:db.query/input db)
+        edn      (qa/try-read-string input)
+        analysis (and (not (:error edn)) (qa/analyse-query edn))]
+    (-> db
+        (update :db.query/key inc)
+        (assoc :db.query/input-committed input
+               :db.query/analysis-committed analysis
+               :db.query/edn-committed edn))))
+
+(defn calc-query-params
+  [{:db.query/keys
+        [analysis-committed query-times
+         input-committed]
+    :as db}]
+  (if analysis-committed
+    {:raw-input      input-committed
+     :query-vt       (:time/vt query-times)
+     :query-tt       (:time/tt query-times)
+     :query-analysis analysis-committed}))
+
 
 
 ; ----- effects -----
@@ -159,50 +193,19 @@
     {:dispatch [:evt.ui/query-submit]}))
 
 
-(defn o-reset-results [db]
-  (assoc db
-    :db.query/result nil
-    :db.query/result-analysis nil
-    :db.query/histories nil
-    :db.query/eid->simple-history nil
-    :db.query/analysis-committed nil
-    :db.query/input-committed nil
-    :db.query/error nil))
-
-(defn o-commit-input [db input]
-  (let [input (:db.query/input db)
-        edn (qa/try-read-string input)
-        analysis (and (not (:error edn)) (qa/analyse-query edn))]
-    (-> db
-        (update :db.query/key inc)
-        (assoc :db.query/input-committed input
-               :db.query/analysis-committed analysis
-               :db.query/edn-committed edn))))
-
 
 ; --- ui ---
-
-(defn db->query-params
-  [{:db.query/keys
-    [analysis-committed query-times
-     input-committed]
-    :as db}]
-  (if analysis-committed
-    {:raw-input      input-committed
-     :query-vt       (:time/vt query-times)
-     :query-tt       (:time/tt query-times)
-     :query-analysis analysis-committed}))
 
 (rf/reg-event-fx
   :evt.ui/query-submit
   (fn [{:keys [db] :as ctx}]
-    ; todo do analysis first
-    (let [new-db
-          (-> db
-              (o-reset-results)
-              (o-commit-input (:db.query/input db)))]
-      {:db new-db
-       :fx/query-exec (db->query-params new-db)})))
+    (if (query-is-valid? (:db.query/input db))
+      (let [new-db
+            (-> db
+                (o-reset-results)
+                (o-commit-input (:db.query/input db)))]
+        {:db new-db
+         :fx/query-exec (calc-query-params new-db)}))))
 
 (rf/reg-event-fx
   :evt.ui/github-examples-request
@@ -228,10 +231,10 @@
   (fn [db [_ time-type time]]
     (assoc-in db [:db.query/time time-type] time)))
 
-(rf/reg-event-db
+(rf/reg-event-fx
   :evt.ui.query/time-commit
-  (fn [db [_ time-type time]]
-    (assoc-in db [:db.query/time time-type] time)))
+  (fn [{:keys [db] :as ctx} [_ time-type time]]
+    {:dispatch [:evt.ui/query-submit]}))
 
 (rf/reg-event-db
   :evt.ui.query/time-reset
