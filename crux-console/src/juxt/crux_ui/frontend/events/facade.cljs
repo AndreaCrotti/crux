@@ -1,4 +1,8 @@
 (ns juxt.crux-ui.frontend.events.facade
+  "This ns keeps all events.
+  Events for central state can be considered as FSM transitions.
+  Hence ideally all state computations should be moved out of ns, but all state
+  transitions (read `(rf/dispatch [:wew])`) should be kept in here."
   (:require [re-frame.core :as rf]
             [cljs.tools.reader.edn :as edn]
             [medley.core :as m]
@@ -47,15 +51,14 @@
 
 (defn calc-query-params
   [{:db.query/keys
-        [analysis-committed query-times
+        [analysis-committed time
          input-committed]
     :as db}]
   (if analysis-committed
     {:raw-input      input-committed
-     :query-vt       (:time/vt query-times)
-     :query-tt       (:time/tt query-times)
+     :query-vt       (:time/vt time)
+     :query-tt       (:time/tt time)
      :query-analysis analysis-committed}))
-
 
 
 ; ----- effects -----
@@ -80,7 +83,6 @@
   :fx.query/histories-docs
   (fn [eids->histories]
     (q/fetch-histories-docs eids->histories)))
-
 
 (rf/reg-fx
   :fx.sys/set-cookie
@@ -122,11 +124,11 @@
   (fn [db [_ stats]]
     (assoc db :db.meta/stats stats)))
 
-(def ^:const ui--history-max-entities 7)
-
 
 
 ; --- io ---
+
+(def ^:const ui--history-max-entities 7)
 
 (rf/reg-event-fx
   :evt.io/query-success

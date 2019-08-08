@@ -18,6 +18,8 @@
       [:.q-editor
        {:padding "16px"
         :position :relative
+        :max-height :100%
+        :overflow :scroll
         :height :100%}
 
        [:&__query-type

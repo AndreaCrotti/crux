@@ -37,6 +37,7 @@
       [:.q-form
         {:position :relative
          :display  :grid
+         :overflow :hidden
          :grid-template
          "'time-controls editor' / minmax(280px, 400px) 1fr"
          :outline "1px solid orange"
@@ -48,6 +49,7 @@
 
         [:&__editor
          {:grid-area "editor"
+          :overflow :hidden
           :height :100%}]
 
         [:&__submit

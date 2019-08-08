@@ -69,7 +69,7 @@
    :examples/put-w-valid
    (fn []
      (let [ticker (gen-ticker)]
-       (mapv #(gen-put-with-offset-days (alter-ticker ticker) %) (range -10 1 1))))
+       (mapv #(gen-put-with-offset-days (alter-ticker ticker) %) (range -1000 1 1))))
 
    :examples/query
    (fn []

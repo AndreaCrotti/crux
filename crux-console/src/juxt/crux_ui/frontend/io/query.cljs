@@ -50,6 +50,7 @@
 
 
 (defn exec-q [query-text vt tt]
+  (println :exec-q vt tt)
   (-> node-client
       (crux-api/db vt tt)
       (crux-api/q query-text)
