@@ -40,7 +40,6 @@
          :overflow :hidden
          :grid-template
          "'time-controls editor' / minmax(280px, 400px) 1fr"
-         :outline "1px solid orange"
          :height   :100%}
 
         [:&__time-controls
