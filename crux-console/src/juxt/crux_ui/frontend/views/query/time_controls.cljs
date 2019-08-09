@@ -6,6 +6,8 @@
             [reagent.core :as r]
             [juxt.crux-ui.frontend.functions :as f]))
 
+(def -sub-time (rf/subscribe [:subs.query/time]))
+(def -sub-vt (rf/subscribe [:subs.query.time/vt]))
 
 (defn on-time-commit [^keyword time-type ^js/Date time]
   (rf/dispatch [:evt.ui.query/time-commit time-type time]))
@@ -15,10 +17,12 @@
 
 
 (defn on-vt-change [d]
+  (println :on-vt-change d)
   (on-time-commit-debounced :time/vt d)
   (rf/dispatch [:evt.ui.query/time-change :time/vt d]))
 
 (defn on-vt-commit [d]
+  (println :on-vt-commit d)
   (on-time-commit :time/vt d))
 
 (defn on-tt-commit [d]
@@ -52,11 +56,11 @@
 (defn range-pickers []
   [:<>
    [:div.time-controls__item
-    [sdt/root
-     {:label "Valid time"
-      :value (js/Date.)
-      :on-change-complete on-vt-commit
-      :on-change on-vt-change}]]
+     [sdt/root
+      {:label "Valid time"
+       :value-sub -sub-vt
+       :on-change-complete on-vt-commit
+       :on-change on-vt-change}]]
    #_[:div.time-controls__item
       [sdt/root {:label "Transaction Time" :on-change on-tt-change}]]])
 

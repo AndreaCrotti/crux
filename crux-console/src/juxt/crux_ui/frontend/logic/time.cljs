@@ -38,3 +38,8 @@
         ts (js/Date.parse date-str)]
     (if-not (js/isNaN ts)
       (js/Date. ts))))
+
+(comment
+  (let [d (js/Date.)]
+    (date->comps d)
+    (comps->date (date->comps d))))
