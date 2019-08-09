@@ -17,16 +17,21 @@
        {:display :flex
         :align-items :center
         :justify-content :space-between}
-       [:&-label]
+       [:&-label
+        {:font-size :18px
+         :font-weight 400
+         :letter-spacing :0.09em}]
        [:&-native
         {:width :250px
          :flex "0 0 100px"}]]
       [:&__row
        {:display :flex
         :align-items :center
-        :height :48px}
+        :height :52px}
        [:&-label
-        {:flex "0 0 50px"}]
+        {:flex "0 0 50px"
+         :text-transform :lowercase
+         :font-size :13px}]
        [:&-slider
         {:flex "1 1 auto"}]]])])
 
