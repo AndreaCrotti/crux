@@ -27,9 +27,9 @@
       [:&__row
        {:display :flex
         :align-items :center
-        :height :52px}
+        :height :40px}
        [:&-label
-        {:flex "0 0 50px"
+        {:flex "0 0 60px"
          :text-transform :lowercase
          :font-size :13px}]
        [:&-slider

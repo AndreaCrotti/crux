@@ -61,6 +61,11 @@
   #(:time/vt % (js/Date.)))
 
 (rf/reg-sub
+  :subs.query.time/tt
+  :<- [:subs.query/time]
+  #(:time/tt % (js/Date.)))
+
+(rf/reg-sub
   :subs.query/input-malformed?
   :<- [:subs.query/input-edn]
   #(:error % false))

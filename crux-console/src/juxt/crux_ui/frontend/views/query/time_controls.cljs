@@ -8,6 +8,7 @@
 
 (def -sub-time (rf/subscribe [:subs.query/time]))
 (def -sub-vt (rf/subscribe [:subs.query.time/vt]))
+(def -sub-tt (rf/subscribe [:subs.query.time/tt]))
 
 (defn on-time-commit [^keyword time-type ^js/Date time]
   (rf/dispatch [:evt.ui.query/time-commit time-type time]))
@@ -47,22 +48,38 @@
 (defn native-pickers []
   [:<>
    [:div.time-controls__item
-    [ndt/picker {:label "Valid time" :on-change on-vt-change}]]
+    [ndt/picker
+     {:label "Valid time"
+      :value @-sub-vt
+      :on-change on-vt-change}]]
    [:div.time-controls__item
-    [ndt/picker {:label "Transaction Time" :on-change on-tt-change}]]])
-
-(def t (js/Date.))
+    [ndt/picker
+     {:label "Transaction Time"
+      :value @-sub-tt
+      :on-change on-tt-change}]]])
 
 (defn range-pickers []
-  [:<>
-   [:div.time-controls__item
-     [sdt/root
-      {:label "Valid time"
-       :value-sub -sub-vt
-       :on-change-complete on-vt-commit
-       :on-change on-vt-change}]]
-   #_[:div.time-controls__item
-      [sdt/root {:label "Transaction Time" :on-change on-tt-change}]]])
+  (let [active-picker (r/atom ::pickers-vt)
+        toggle {::pickers-vt ::pickers-tt
+                ::pickers-tt ::pickers-vt}
+        toggle-time #(swap! active-picker toggle)]
+    (fn []
+      (if (= ::pickers-vt @active-picker)
+       [:<>
+        [sdt/root
+         {:label "Valid time"
+          :value-sub -sub-vt
+          :on-change-complete on-vt-commit
+          :on-change on-vt-change}]
+        [:label {:on-click toggle-time} "Tx time: " (str @-sub-tt)]]
+       [:<>
+        [sdt/root
+         {:label "Tx time"
+          :value-sub -sub-tt
+          :on-change-complete on-tt-commit
+          :on-change on-tt-change}]
+        [:label {:on-click toggle-time} "Valid time: " (str @-sub-vt)]]))))
+
 
 
 (defn root []
