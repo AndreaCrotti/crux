@@ -3,6 +3,7 @@
             [re-frame.core :as rf]
             [juxt.crux-ui.frontend.views.query-ui :as q]
             [juxt.crux-ui.frontend.views.header :as header]
+            [juxt.crux-ui.frontend.views.commons.input :as input]
             [juxt.crux-ui.frontend.views.comps :as comps]
             [juxt.crux-ui.frontend.svg-icons :as icon]))
 
@@ -16,5 +17,6 @@
 (defn root []
   (let [root-tab @-sub-root-tab]
     (fn []
-      [:div.settings])))
+      [:div.settings
+       [input/text]])))
 
