@@ -1,19 +1,15 @@
 (ns juxt.crux-ui.frontend.views.commons.user-intents
-  (:require [commons.constants.keycodes :as kc]
-            [juxt.crux-ui.frontend.views.commons.dom :as dom]
-            [juxt.crux-ui.frontend.views.commons.user-intents :as intents]))
-
-::create
-::delete
+  (:require [juxt.crux-ui.frontend.views.commons.keycodes :as kc]
+            [juxt.crux-ui.frontend.views.commons.dom :as dom]))
 
 (defn interpret-user-intent [target-value key-code]
   (if (empty? target-value)
     (case (kc/kc->kw key-code)
-      ::kc/enter               ::intents/create
-      ::kc/backspace-or-delete ::intents/delete
+      ::kc/enter               ::create
+      ::kc/backspace-or-delete ::delete
       nil)
     (case (kc/kc->kw key-code)
-      ::kc/enter               ::intents/create
+      ::kc/enter               ::create
       ::kc/backspace-or-delete nil
       nil)))
 

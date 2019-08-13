@@ -1,6 +1,6 @@
 (ns juxt.crux-ui.frontend.views.commons.input
   (:require [reagent.core :as r]
-            [space-ui.ui-logic.user-intents :as user-intents]))
+            [juxt.crux-ui.frontend.views.commons.user-intents :as user-intents]))
 
 
 (defn- -data-attrs-mapper [[k v]]
@@ -10,7 +10,11 @@
   (into {} (map -data-attrs-mapper hmap)))
 
 
-(defn root [id {:keys [on-change on-intent on-key-down process-paste] :as opts}]
+(defn text
+  [id {:keys [on-change on-change-complete
+              on-intent on-key-down
+              process-paste]
+       :as opts}]
   (let [node          (r/atom nil)
         cur-val       (atom nil)
         get-cur-value #(some-> @node (.-value))
@@ -19,12 +23,17 @@
                         on-key-down on-key-down
                         :else       identity)
 
+        on-blur-internal
+        (fn [evt]
+          (if on-change-complete
+            (on-change-complete {:value (get-cur-value)})))
+
         on-key-up-internal
         (if on-change
           (fn [evt]
-            (let [cur-html (get-cur-value)]
-              (when (not= cur-html @cur-val)
-                (on-change {:value cur-html
+            (let [cur-value (get-cur-value)]
+              (when (not= cur-value @cur-val)
+                (on-change {:value  cur-value
                             :target @node})))))
 
         on-paste-internal

@@ -1,5 +1,6 @@
 (ns juxt.crux-ui.frontend.views.commons.dom
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [juxt.crux-ui.frontend.functions :as f]))
 
 (def window js/window)
 (def doc js/document)

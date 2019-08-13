@@ -1,7 +1,7 @@
 (ns juxt.crux-ui.frontend.views.commons.form-line
   (:require [clojure.string :as s]))
 
-(defn line [& {:keys [on-reset css-class label control hint]}]
+(defn line [{:keys [on-reset css-class label control hint]}]
   [:div.line {:class css-class :title label}
    (if label
      [:div.line__label label])
