@@ -424,18 +424,18 @@
                                                      db
                                                      index-store
                                                      compiled-query))}
-                   var->joins (merge-with into var->joins {v [join]
-                                                           e [join]})
-                   var->joins (if (literal? e)
-                                (merge-with into var->joins {e [{:idx-fn
-                                                                 (fn [db index-store compiled-query]
-                                                                   (new-literal-index index-store e))}]})
-                                var->joins)
-                   var->joins (if (literal? v)
-                                (merge-with into var->joins {v [{:idx-fn
-                                                                 (fn [db index-store compiled-query]
-                                                                   (new-literal-index index-store v))}]})
-                                var->joins)]
+                   merge-into (partial merge-with into)
+                   var->joins (cond-> (merge-with into var->joins {v [join]
+                                                                   e [join]})
+                                (literal? e)
+                                (merge-into {e [{:idx-fn
+                                                 (fn [_db index-store _compiled-query]
+                                                   (new-literal-index index-store e))}]})
+
+                                (literal? v)
+                                (merge-into var->joins {v [{:idx-fn
+                                                                 (fn [_db index-store _compiled-query]
+                                                                   (new-literal-index index-store v))}]}))]
                var->joins))
            var->joins))]))
 
